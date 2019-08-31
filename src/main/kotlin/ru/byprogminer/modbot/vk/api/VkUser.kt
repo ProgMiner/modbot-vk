@@ -1,10 +1,11 @@
 package ru.byprogminer.modbot.vk.api
 
 import org.intellij.lang.annotations.Language
-import ru.byprogminer.modbot.Agent
 import ru.byprogminer.modbot.api.PhotoVariant
 import ru.byprogminer.modbot.api.User
 import ru.byprogminer.modbot.utility.LargeObject
+import ru.byprogminer.modbot.vk.VkAgent
+import ru.byprogminer.modbot.vk.utility.JsonObjectLargeObject
 import java.net.URL
 import java.time.Duration
 import java.time.Instant
@@ -16,14 +17,13 @@ import javax.imageio.ImageIO
 
 @Suppress("MemberVisibilityCanBePrivate")
 open class VkUser
-internal constructor(
-    val id: Long,
-    override val agent: Agent
-): User, LargeObject {
+internal constructor(val id: Long, override val agent: VkAgent): User, LargeObject {
 
     companion object {
 
-        // internal const val REQUIRED_FIELDS
+        private const val VK_API_USERS_GET_METHOD = "users.get"
+        private const val VK_API_INITIAL_FIELDS = "nickname,bdate,online,last_seen," +
+                "photo_50,photo_100,photo_200,photo_200_orig,photo_400_orig"
 
         private const val BIRTHDAY_SEPARATOR = '.'
 
@@ -47,7 +47,8 @@ internal constructor(
     }
 
     private val cache = mutableMapOf<String, LargeObject?>()
-    private val future = CompletableFuture.supplyAsync { TODO() as LargeObject }
+    private val future = CompletableFuture.supplyAsync { requestFields(VK_API_INITIAL_FIELDS) }
+        .thenApply(::JsonObjectLargeObject)
 
     val firstName by lazy { future.get()["first_name"]?.asString()!! }
     val lastName by lazy { future.get()["last_name"]?.asString()!! }
@@ -58,7 +59,7 @@ internal constructor(
     override val name by lazy { firstName }
     override val fullName by lazy { names.joinToString(" ") }
 
-    override val photo by lazy(this::doGetPhoto)
+    override val photo by lazy { this.doGetPhoto() }
 
     val bdate by lazy { future.get()["bdate"]?.asString() }
     override val birthday by lazy { parseBirthday(bdate) }
@@ -72,10 +73,11 @@ internal constructor(
 
     override fun link(caption: String?) = "[id$id|${caption ?: name}]"
 
-    override fun get(key: String) = future.get()[key] ?:
-        cache.computeIfAbsent(key, this::getNewField)
+    override fun get(key: String) = future.get()[key] ?: cache
+        .computeIfAbsent(key) { JsonObjectLargeObject(requestFields(it))["key"] }
 
-    private fun getNewField(key: String): LargeObject? = TODO()
+    private fun requestFields(fields: String) = agent.api(VK_API_USERS_GET_METHOD,
+        mapOf("user_ids" to id.toString(), "fields" to fields))
 
     private fun doGetPhoto(): Set<PhotoVariant>? {
         val apiFutures = arrayOf(

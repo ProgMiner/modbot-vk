@@ -1,14 +1,13 @@
 package ru.byprogminer.modbot.vk
 
-import ru.byprogminer.modbot.AbstractAgent
 import ru.byprogminer.modbot.vk.api.VkAttachmentUploader
 import ru.byprogminer.modbot.vk.api.VkSelfUser
 
-class VkUserAgent(private val credentials: VkCredentials.User): AbstractAgent<VkAttachmentUploader>() {
+class VkUserAgent(id: Long, accessToken: String): VkAgent(accessToken) {
 
-    override val attachmentUploader = VkAttachmentUploader(credentials)
+    override val attachmentUploader = VkAttachmentUploader(this)
 
-    override val user = VkSelfUser(credentials.id, this)
+    override val user = VkSelfUser(id, this)
 
     // TODO long polling
 }
