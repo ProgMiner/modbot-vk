@@ -4,10 +4,12 @@ import com.alibaba.fastjson.JSON
 import com.alibaba.fastjson.JSONObject
 import ru.byprogminer.modbot.AbstractAgent
 import ru.byprogminer.modbot.vk.api.VkAttachmentUploader
+import ru.byprogminer.modbot.vk.api.VkUser
 import ru.byprogminer.modbot.vk.utility.JsonObjectLargeObject
 import java.io.Reader
 import java.net.URL
 import java.net.URLEncoder
+import java.util.*
 import java.util.stream.Collectors
 
 abstract class VkAgent(private val accessToken: String): AbstractAgent<VkAttachmentUploader>() {
@@ -18,7 +20,13 @@ abstract class VkAgent(private val accessToken: String): AbstractAgent<VkAttachm
         private const val VK_API_VER = "5.101"
     }
 
+    private val usersCache = WeakHashMap<Long, VkUser>()
+    // private val groupsCache = WeakHashMap<Long, VkGroup>()
+    // private val chatsCache = WeakHashMap<Long, VkChat>()
+
     abstract override val attachmentUploader: VkAttachmentUploader
+
+    fun getUser(id: Long): VkUser = usersCache.computeIfAbsent(id) { VkUser(it, this) }
 
     internal fun api(method: String, arguments: Map<String, String>, assertNoError: Boolean = true): JSONObject {
         val response = JSON.parseObject(requestApi(method, arguments))
