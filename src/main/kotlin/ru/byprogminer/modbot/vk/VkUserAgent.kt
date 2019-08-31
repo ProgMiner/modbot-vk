@@ -8,6 +8,4 @@ class VkUserAgent(id: Long, accessToken: String): VkAgent(accessToken) {
     override val attachmentUploader = VkAttachmentUploader(this)
 
     override val user = VkSelfUser(id, this)
-
-    // TODO long polling
 }
