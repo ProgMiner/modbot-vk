@@ -3,6 +3,7 @@ package ru.byprogminer.modbot.vk
 import com.alibaba.fastjson.JSON
 import com.alibaba.fastjson.JSONObject
 import ru.byprogminer.modbot.AbstractAgent
+import ru.byprogminer.modbot.vk.api.VkAccount
 import ru.byprogminer.modbot.vk.api.VkAttachmentUploader
 import ru.byprogminer.modbot.vk.api.VkGroup
 import ru.byprogminer.modbot.vk.api.VkUser
@@ -31,6 +32,19 @@ abstract class VkAgent(private val accessToken: String): AbstractAgent<VkAttachm
     fun getGroup(id: Long): VkGroup = groupsCache.computeIfAbsent(id) { VkGroup(it, this) }
 
     // TODO long polling
+
+    fun resolveScreenName(screenName: String): VkAccount? = try {
+        val response = api("utils.resolveScreenName", mapOf("screen_name" to screenName))
+            .getJSONObject("response")
+
+        when (response.getString("type")) {
+            "user" -> getUser(response.getLong("object_id"))
+            "group" -> getGroup(response.getLong("object_id"))
+            else -> null
+        }
+    } catch (e: ClassCastException) {
+        null
+    }
 
     internal fun api(method: String, arguments: Map<String, String>, assertNoError: Boolean = true): JSONObject {
         val response = JSON.parseObject(requestApi(method, arguments))
