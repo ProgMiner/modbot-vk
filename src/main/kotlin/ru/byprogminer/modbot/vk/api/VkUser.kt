@@ -1,6 +1,6 @@
 package ru.byprogminer.modbot.vk.api
 
-import ru.byprogminer.modbot.api.User
+import com.alibaba.fastjson.JSONObject
 import ru.byprogminer.modbot.utility.LargeObject
 import ru.byprogminer.modbot.vk.VkAgent
 import ru.byprogminer.modbot.vk.utility.JsonObjectLargeObject
@@ -12,7 +12,7 @@ import java.util.concurrent.CompletableFuture
 
 @Suppress("MemberVisibilityCanBePrivate")
 open class VkUser
-internal constructor(val id: Long, override val agent: VkAgent): User, LargeObject {
+internal constructor(val id: Long, override val agent: VkAgent): VkAccount() {
 
     companion object {
 
@@ -69,8 +69,8 @@ internal constructor(val id: Long, override val agent: VkAgent): User, LargeObje
     override operator fun get(key: String) = future.get()[key] ?: customProperties
         .computeIfAbsent(key) { JsonObjectLargeObject(requestFields(it))["key"] }
 
-    private fun requestFields(fields: String) = agent.api(VK_API_USERS_GET_METHOD,
-        mapOf("user_ids" to id.toString(), "fields" to fields))
+    private fun requestFields(fields: String): JSONObject = agent.api(VK_API_USERS_GET_METHOD,
+        mapOf("user_ids" to id.toString(), "fields" to fields)).getJSONArray("response").getJSONObject(0)
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

@@ -1,6 +1,5 @@
 package ru.byprogminer.modbot.vk.utility
 
-import org.intellij.lang.annotations.Language
 import ru.byprogminer.modbot.api.PhotoVariant
 import ru.byprogminer.modbot.utility.LargeObject
 import java.net.URL
@@ -11,7 +10,6 @@ import java.util.stream.Collectors
 import javax.imageio.ImageIO
 import kotlin.streams.toList
 
-@Language("RegExp")
 private val CAMERA_URL_REGEX = "https://vk\\.com/images/camera_\\(\\d{2,3}\\)\\.png".toRegex()
 
 internal fun Future<out LargeObject>.doGetPhoto(vararg photos: String): Set<PhotoVariant>? {
