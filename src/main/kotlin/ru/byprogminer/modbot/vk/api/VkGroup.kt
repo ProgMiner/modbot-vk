@@ -1,6 +1,5 @@
 package ru.byprogminer.modbot.vk.api
 
-import com.alibaba.fastjson.JSONObject
 import ru.byprogminer.modbot.utility.LargeObject
 import ru.byprogminer.modbot.vk.VkAgent
 import ru.byprogminer.modbot.vk.utility.JsonObjectLargeObject
