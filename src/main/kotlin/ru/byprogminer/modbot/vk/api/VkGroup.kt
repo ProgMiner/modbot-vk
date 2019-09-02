@@ -13,7 +13,6 @@ internal constructor(val id: Long, override val agent: VkAgent): VkAccount() {
 
     companion object {
 
-        private const val VK_API_GROUPS_GET_BY_ID_METHOD = "groups.getById"
         private const val VK_API_INITIAL_FIELDS = "has_photo"
     }
 
@@ -41,7 +40,7 @@ internal constructor(val id: Long, override val agent: VkAgent): VkAccount() {
     override operator fun get(key: String) = future.get()[key] ?: customProperties
         .computeIfAbsent(key) { JsonObjectLargeObject(requestFields(it))["key"] }
 
-    private fun requestFields(fields: String): JSONObject = agent.api(VK_API_GROUPS_GET_BY_ID_METHOD,
+    private fun requestFields(fields: String): JSONObject = agent.api("groups.getById",
         mapOf("group_id" to id.toString(), "fields" to fields)).getJSONArray("response").getJSONObject(0)
 
     override fun equals(other: Any?): Boolean {
