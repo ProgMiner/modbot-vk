@@ -18,7 +18,6 @@ internal constructor(val id: Long, override val agent: VkAgent): VkAccount() {
 
     private val customProperties = mutableMapOf<String, LargeObject?>()
     private val future = CompletableFuture.supplyAsync { requestFields(VK_API_INITIAL_FIELDS) }
-        .thenApply(::JsonObjectLargeObject)
 
     override val name by lazy { future.get()["name"]?.asString()!! }
 
@@ -38,10 +37,10 @@ internal constructor(val id: Long, override val agent: VkAgent): VkAccount() {
     override fun link(caption: String?) = "[id$id|${caption ?: name}]"
 
     override operator fun get(key: String) = future.get()[key] ?: customProperties
-        .computeIfAbsent(key) { JsonObjectLargeObject(requestFields(it))["key"] }
+        .computeIfAbsent(key) { requestFields(it)["key"] }
 
-    private fun requestFields(fields: String): JSONObject = agent.api("groups.getById",
-        mapOf("group_id" to id.toString(), "fields" to fields)).getJSONArray("response").getJSONObject(0)
+    private fun requestFields(fields: String) = JsonObjectLargeObject(agent.api("groups.getById",
+        mapOf("group_id" to id.toString(), "fields" to fields)).getJSONArray("response").getJSONObject(0))
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
