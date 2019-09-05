@@ -33,7 +33,7 @@ internal constructor(val id: Long, override val agent: VkAgent): VkAccount() {
 
     override val isAvailable by lazy { future.get()["deactivated"] == null }
 
-    override fun link(caption: String?) = "[id$id|${caption ?: name}]"
+    override fun link(caption: String?) = "[club$id|${caption ?: name}]"
 
     override operator fun get(key: String) = future.get()[key] ?: customProperties
         .computeIfAbsent(key) { requestFields(it)["key"] }
