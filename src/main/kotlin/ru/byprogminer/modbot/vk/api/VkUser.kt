@@ -28,7 +28,7 @@ internal constructor(
         private const val BIRTHDAY_SEPARATOR = '.'
 
         internal fun requestFields(id: Long, actor: VkActor, fields: String) = JsonObjectLargeObject(actor
-            .api("users.get", mapOf("user_ids" to id.toString(), "fields" to fields))
+            .api("users.get", mapOf("user_ids" to id, "fields" to fields))
             .getJSONArray("response").getJSONObject(0))
 
         private fun parseBirthday(bdate: String?): MonthDay? {

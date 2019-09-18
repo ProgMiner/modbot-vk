@@ -22,7 +22,7 @@ internal constructor(
         private const val VK_API_INITIAL_FIELDS = "has_photo"
 
         internal fun requestFields(id: Long, actor: VkActor, fields: String) = JsonObjectLargeObject(actor
-            .api("groups.getById", mapOf("group_id" to id.toString(), "fields" to fields))
+            .api("groups.getById", mapOf("group_id" to id, "fields" to fields))
             .getJSONArray("response").getJSONObject(0))
     }
 

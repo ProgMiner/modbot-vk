@@ -17,7 +17,7 @@ internal constructor(
     val id: Long,
     override val actor: VkActor,
     private val future: Future<LargeObject> = CompletableFuture.supplyAsync { JsonObjectLargeObject(actor
-        .api("messages.getConversationById", mapOf("peer_id" to (2_000_000_000 + id).toString()))
+        .api("messages.getConversationById", mapOf("peer_id" to (2_000_000_000 + id)))
         .getJSONObject("response").getJSONArray("items").getJSONObject(0)) }
 ): Conversation {
 
@@ -47,15 +47,15 @@ internal constructor(
     override fun joinUser(user: User) {
         require(user is VkUser)
 
-        actor.api("messages.addChatUser", mapOf("chat_id" to id.toString(), "user_id" to user.id.toString()))
+        actor.api("messages.addChatUser", mapOf("chat_id" to id, "user_id" to user.id))
     }
 
     override fun kickUser(user: User) {
         require(user is VkAccount)
 
-        actor.api("messages.removeChatUser", mapOf("chat_id" to id.toString(), when (user) {
-            is VkUser -> "user_id" to user.id.toString()
-            is VkGroup -> "member_id" to "-${user.id}"
+        actor.api("messages.removeChatUser", mapOf("chat_id" to id, when (user) {
+            is VkUser -> "user_id" to user.id
+            is VkGroup -> "member_id" to -user.id
             else -> throw IllegalArgumentException()
         }))
     }
