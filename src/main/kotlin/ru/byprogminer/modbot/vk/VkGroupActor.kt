@@ -9,24 +9,14 @@ import ru.byprogminer.modbot.vk.utility.JsonObjectLargeObject
 import ru.byprogminer.modbot.vk.utility.openUrlConnection
 import java.io.Reader
 
-@Suppress("MemberVisibilityCanBePrivate")
-class VkGroupActor(val id: Long, accessToken: String, eventBus: EventBus): VkActor(accessToken, eventBus) {
-
-    private data class LongPollingStatus(
-        override val key: String,
-        override val server: String,
-        override val ts: String
-    ): VkActor.LongPollingStatus {
-
-        override fun with(key: String, server: String, ts: String) = copy(key = key, server = server, ts = ts)
-    }
+class VkGroupActor(id: Long, accessToken: String, eventBus: EventBus): VkActor(accessToken, eventBus) {
 
     override val attachmentUploader = VkAttachmentUploader(this)
 
     override val user = VkSelfGroup(id, this)
 
     override fun requestLongPollingStatus(): VkActor.LongPollingStatus {
-        val response = api("groups.getLongPollServer", mapOf("group_id" to id))
+        val response = api("groups.getLongPollServer", mapOf("group_id" to user.id)).getJSONObject("response")
 
         return LongPollingStatus(
             key = response.getString("key"),

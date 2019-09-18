@@ -21,14 +21,11 @@ abstract class VkActor(private val accessToken: String, eventBus: EventBus):
     AbstractActor<VkAttachmentUploader>(eventBus)
 {
 
-    protected interface LongPollingStatus {
-
-        val key: String
-        val server: String
+    protected data class LongPollingStatus(
+        val key: String,
+        val server: String,
         val ts: String
-
-        fun with(key: String = this.key, server: String = this.server, ts: String = this.ts): LongPollingStatus
-    }
+    )
 
     companion object {
 
@@ -66,7 +63,7 @@ abstract class VkActor(private val accessToken: String, eventBus: EventBus):
 
         val ts = response["ts"]?.asString()
         if (ts != null) {
-            longPollingStatus = longPollingStatus.with(ts = ts)
+            longPollingStatus = longPollingStatus.copy(ts = ts)
         }
 
         when (val failed = response["failed"]?.asInt()) {
@@ -82,8 +79,8 @@ abstract class VkActor(private val accessToken: String, eventBus: EventBus):
                 val newLongPollingStatus = requestLongPollingStatus()
 
                 longPollingStatus = when (failed) {
-                    2 -> longPollingStatus.with(key = newLongPollingStatus.key)
-                    3 -> longPollingStatus.with(key = newLongPollingStatus.key, ts = newLongPollingStatus.ts)
+                    2 -> longPollingStatus.copy(key = newLongPollingStatus.key)
+                    3 -> longPollingStatus.copy(key = newLongPollingStatus.key, ts = newLongPollingStatus.ts)
                     else -> newLongPollingStatus
                 }
             }
