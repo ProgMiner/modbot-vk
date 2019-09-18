@@ -2,7 +2,7 @@ package ru.byprogminer.modbot.vk
 
 import com.alibaba.fastjson.JSON
 import com.alibaba.fastjson.JSONObject
-import ru.byprogminer.modbot.AbstractAgent
+import ru.byprogminer.modbot.AbstractActor
 import ru.byprogminer.modbot.vk.api.VkAttachmentUploader
 import ru.byprogminer.modbot.vk.api.VkConversation
 import ru.byprogminer.modbot.vk.api.VkGroup
@@ -14,7 +14,7 @@ import java.net.URLEncoder
 import java.util.*
 import java.util.stream.Collectors
 
-abstract class VkAgent(private val accessToken: String): AbstractAgent<VkAttachmentUploader>() {
+abstract class VkActor(private val accessToken: String): AbstractActor<VkAttachmentUploader>() {
 
     companion object {
 

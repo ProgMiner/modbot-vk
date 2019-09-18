@@ -3,7 +3,7 @@ package ru.byprogminer.modbot.vk
 import ru.byprogminer.modbot.vk.api.VkAttachmentUploader
 import ru.byprogminer.modbot.vk.api.VkSelfUser
 
-class VkUserAgent(id: Long, accessToken: String): VkAgent(accessToken) {
+class VkUserActor(id: Long, accessToken: String): VkActor(accessToken) {
 
     override val attachmentUploader = VkAttachmentUploader(this)
 

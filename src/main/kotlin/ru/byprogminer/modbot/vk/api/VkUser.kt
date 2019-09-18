@@ -1,7 +1,7 @@
 package ru.byprogminer.modbot.vk.api
 
 import ru.byprogminer.modbot.utility.LargeObject
-import ru.byprogminer.modbot.vk.VkAgent
+import ru.byprogminer.modbot.vk.VkActor
 import ru.byprogminer.modbot.vk.utility.JsonObjectLargeObject
 import ru.byprogminer.modbot.vk.utility.doGetPhoto
 import java.time.Duration
@@ -14,9 +14,9 @@ import java.util.concurrent.Future
 open class VkUser
 internal constructor(
     val id: Long,
-    override val agent: VkAgent,
+    override val actor: VkActor,
     private val future: Future<LargeObject> = CompletableFuture.supplyAsync {
-        requestFields(id, agent, VK_API_INITIAL_FIELDS)
+        requestFields(id, actor, VK_API_INITIAL_FIELDS)
     }
 ): VkAccount() {
 
@@ -27,7 +27,7 @@ internal constructor(
 
         private const val BIRTHDAY_SEPARATOR = '.'
 
-        internal fun requestFields(id: Long, agent: VkAgent, fields: String) = JsonObjectLargeObject(agent
+        internal fun requestFields(id: Long, actor: VkActor, fields: String) = JsonObjectLargeObject(actor
             .api("users.get", mapOf("user_ids" to id.toString(), "fields" to fields))
             .getJSONArray("response").getJSONObject(0))
 
@@ -74,7 +74,7 @@ internal constructor(
     override fun link(caption: String?) = "[id$id|${caption ?: name}]"
 
     override operator fun get(key: String) = future.get()[key] ?: customProperties
-        .computeIfAbsent(key) { requestFields(id, agent, it)["key"] }
+        .computeIfAbsent(key) { requestFields(id, actor, it)["key"] }
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -83,14 +83,14 @@ internal constructor(
         other as VkUser
 
         if (id != other.id) return false
-        if (agent != other.agent) return false
+        if (actor != other.actor) return false
 
         return true
     }
 
     override fun hashCode(): Int {
         var result = id.hashCode()
-        result = 31 * result + agent.hashCode()
+        result = 31 * result + actor.hashCode()
         return result
     }
 }

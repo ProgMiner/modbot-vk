@@ -5,7 +5,7 @@ import ru.byprogminer.modbot.api.Message
 import ru.byprogminer.modbot.api.PhotoVariant
 import ru.byprogminer.modbot.api.User
 import ru.byprogminer.modbot.utility.LargeObject
-import ru.byprogminer.modbot.vk.VkAgent
+import ru.byprogminer.modbot.vk.VkActor
 import ru.byprogminer.modbot.vk.utility.JsonObjectLargeObject
 import ru.byprogminer.modbot.vk.utility.doGetPhoto
 import java.util.concurrent.CompletableFuture
@@ -15,8 +15,8 @@ import java.util.concurrent.Future
 class VkConversation
 internal constructor(
     val id: Long,
-    override val agent: VkAgent,
-    private val future: Future<LargeObject> = CompletableFuture.supplyAsync { JsonObjectLargeObject(agent
+    override val actor: VkActor,
+    private val future: Future<LargeObject> = CompletableFuture.supplyAsync { JsonObjectLargeObject(actor
         .api("messages.getConversationById", mapOf("peer_id" to (2_000_000_000 + id).toString()))
         .getJSONObject("response").getJSONArray("items").getJSONObject(0)) }
 ): Conversation {
@@ -47,13 +47,13 @@ internal constructor(
     override fun joinUser(user: User) {
         require(user is VkUser)
 
-        agent.api("messages.addChatUser", mapOf("chat_id" to id.toString(), "user_id" to user.id.toString()))
+        actor.api("messages.addChatUser", mapOf("chat_id" to id.toString(), "user_id" to user.id.toString()))
     }
 
     override fun kickUser(user: User) {
         require(user is VkAccount)
 
-        agent.api("messages.removeChatUser", mapOf("chat_id" to id.toString(), when (user) {
+        actor.api("messages.removeChatUser", mapOf("chat_id" to id.toString(), when (user) {
             is VkUser -> "user_id" to user.id.toString()
             is VkGroup -> "member_id" to "-${user.id}"
             else -> throw IllegalArgumentException()
@@ -70,14 +70,14 @@ internal constructor(
         other as VkConversation
 
         if (id != other.id) return false
-        if (agent != other.agent) return false
+        if (actor != other.actor) return false
 
         return true
     }
 
     override fun hashCode(): Int {
         var result = id.hashCode()
-        result = 31 * result + agent.hashCode()
+        result = 31 * result + actor.hashCode()
         return result
     }
 }
