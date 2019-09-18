@@ -8,10 +8,17 @@ import java.time.Duration
 import java.time.Instant
 import java.time.MonthDay
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.Future
 
 @Suppress("MemberVisibilityCanBePrivate")
 open class VkUser
-internal constructor(val id: Long, override val agent: VkAgent): VkAccount() {
+internal constructor(
+    val id: Long,
+    override val agent: VkAgent,
+    private val future: Future<LargeObject> = CompletableFuture.supplyAsync {
+        requestFields(id, agent, VK_API_INITIAL_FIELDS)
+    }
+): VkAccount() {
 
     companion object {
 
@@ -19,6 +26,10 @@ internal constructor(val id: Long, override val agent: VkAgent): VkAccount() {
                 "photo_50,photo_100,photo_200,photo_200_orig,photo_400_orig"
 
         private const val BIRTHDAY_SEPARATOR = '.'
+
+        internal fun requestFields(id: Long, agent: VkAgent, fields: String) = JsonObjectLargeObject(agent
+            .api("users.get", mapOf("user_ids" to id.toString(), "fields" to fields))
+            .getJSONArray("response").getJSONObject(0))
 
         private fun parseBirthday(bdate: String?): MonthDay? {
             if (bdate == null) {
@@ -37,7 +48,6 @@ internal constructor(val id: Long, override val agent: VkAgent): VkAccount() {
     }
 
     private val customProperties = mutableMapOf<String, LargeObject?>()
-    private val future = CompletableFuture.supplyAsync { requestFields(VK_API_INITIAL_FIELDS) }
 
     val firstName by lazy { future.get()["first_name"]?.asString()!! }
     val lastName by lazy { future.get()["last_name"]?.asString()!! }
@@ -64,10 +74,7 @@ internal constructor(val id: Long, override val agent: VkAgent): VkAccount() {
     override fun link(caption: String?) = "[id$id|${caption ?: name}]"
 
     override operator fun get(key: String) = future.get()[key] ?: customProperties
-        .computeIfAbsent(key) { requestFields(it)["key"] }
-
-    private fun requestFields(fields: String) = JsonObjectLargeObject(agent.api("users.get",
-        mapOf("user_ids" to id.toString(), "fields" to fields)).getJSONArray("response").getJSONObject(0))
+        .computeIfAbsent(key) { requestFields(id, agent, it)["key"] }
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

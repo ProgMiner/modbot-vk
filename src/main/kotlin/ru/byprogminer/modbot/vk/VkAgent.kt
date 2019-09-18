@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON
 import com.alibaba.fastjson.JSONObject
 import ru.byprogminer.modbot.AbstractAgent
 import ru.byprogminer.modbot.vk.api.VkAttachmentUploader
+import ru.byprogminer.modbot.vk.api.VkConversation
 import ru.byprogminer.modbot.vk.api.VkGroup
 import ru.byprogminer.modbot.vk.api.VkUser
 import ru.byprogminer.modbot.vk.utility.JsonObjectLargeObject
@@ -23,12 +24,13 @@ abstract class VkAgent(private val accessToken: String): AbstractAgent<VkAttachm
 
     private val usersCache = WeakHashMap<Long, VkUser>()
     private val groupsCache = WeakHashMap<Long, VkGroup>()
-    // private val chatsCache = WeakHashMap<Long, VkChat>()
+    private val conversationsCache = WeakHashMap<Long, VkConversation>()
 
     abstract override val attachmentUploader: VkAttachmentUploader
 
     fun getUser(id: Long): VkUser = usersCache.computeIfAbsent(id) { VkUser(it, this) }
     fun getGroup(id: Long): VkGroup = groupsCache.computeIfAbsent(id) { VkGroup(it, this) }
+    fun getConversation(id: Long): VkConversation = conversationsCache.computeIfAbsent(id) { VkConversation(it, this) }
 
     // TODO long polling
 

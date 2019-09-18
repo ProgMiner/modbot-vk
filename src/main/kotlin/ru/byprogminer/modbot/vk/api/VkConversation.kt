@@ -4,20 +4,22 @@ import ru.byprogminer.modbot.api.Conversation
 import ru.byprogminer.modbot.api.Message
 import ru.byprogminer.modbot.api.PhotoVariant
 import ru.byprogminer.modbot.api.User
+import ru.byprogminer.modbot.utility.LargeObject
 import ru.byprogminer.modbot.vk.VkAgent
 import ru.byprogminer.modbot.vk.utility.JsonObjectLargeObject
 import ru.byprogminer.modbot.vk.utility.doGetPhoto
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.Future
 
 @Suppress("MemberVisibilityCanBePrivate")
 class VkConversation
-internal constructor(val id: Long, override val agent: VkAgent): Conversation {
-
-    private val peerId = (2_000_000_000 + id).toString()
-
-    private val future = CompletableFuture.supplyAsync { JsonObjectLargeObject(agent
-        .api("messages.getConversationById", mapOf("peer_id" to peerId))
+internal constructor(
+    val id: Long,
+    override val agent: VkAgent,
+    private val future: Future<LargeObject> = CompletableFuture.supplyAsync { JsonObjectLargeObject(agent
+        .api("messages.getConversationById", mapOf("peer_id" to (2_000_000_000 + id).toString()))
         .getJSONObject("response").getJSONArray("items").getJSONObject(0)) }
+): Conversation {
 
     private val chatSettings by lazy { future.get()["chat_settings"]!! }
 

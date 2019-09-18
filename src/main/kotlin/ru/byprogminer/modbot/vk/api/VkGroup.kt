@@ -5,18 +5,28 @@ import ru.byprogminer.modbot.vk.VkAgent
 import ru.byprogminer.modbot.vk.utility.JsonObjectLargeObject
 import ru.byprogminer.modbot.vk.utility.doGetPhoto
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.Future
 
 @Suppress("MemberVisibilityCanBePrivate")
 open class VkGroup
-internal constructor(val id: Long, override val agent: VkAgent): VkAccount() {
+internal constructor(
+    val id: Long,
+    override val agent: VkAgent,
+    private val future: Future<LargeObject> = CompletableFuture.supplyAsync {
+        requestFields(id, agent, VK_API_INITIAL_FIELDS)
+    }
+): VkAccount() {
 
     companion object {
 
         private const val VK_API_INITIAL_FIELDS = "has_photo"
+
+        internal fun requestFields(id: Long, agent: VkAgent, fields: String) = JsonObjectLargeObject(agent
+            .api("groups.getById", mapOf("group_id" to id.toString(), "fields" to fields))
+            .getJSONArray("response").getJSONObject(0))
     }
 
     private val customProperties = mutableMapOf<String, LargeObject?>()
-    private val future = CompletableFuture.supplyAsync { requestFields(VK_API_INITIAL_FIELDS) }
 
     override val name by lazy { future.get()["name"]?.asString()!! }
 
@@ -36,10 +46,7 @@ internal constructor(val id: Long, override val agent: VkAgent): VkAccount() {
     override fun link(caption: String?) = "[club$id|${caption ?: name}]"
 
     override operator fun get(key: String) = future.get()[key] ?: customProperties
-        .computeIfAbsent(key) { requestFields(it)["key"] }
-
-    private fun requestFields(fields: String) = JsonObjectLargeObject(agent.api("groups.getById",
-        mapOf("group_id" to id.toString(), "fields" to fields)).getJSONArray("response").getJSONObject(0))
+        .computeIfAbsent(key) { requestFields(id, agent, it)["key"] }
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
